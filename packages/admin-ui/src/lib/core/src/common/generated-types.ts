@@ -311,6 +311,7 @@ export type Mutation = {
   assignRoleToAdministrator: Administrator;
   /** Authenticates the user using a named authentication strategy */
   authenticate: AuthenticationResult;
+  cancelJob: Job;
   cancelOrder: CancelOrderResult;
   /** Create a new Administrator */
   createAdministrator: Administrator;
@@ -421,7 +422,8 @@ export type Mutation = {
   setAsLoggedIn: UserStatus;
   setAsLoggedOut: UserStatus;
   setOrderCustomFields?: Maybe<Order>;
-  setUiLanguage?: Maybe<LanguageCode>;
+  setUiLanguage: LanguageCode;
+  setUiTheme: Scalars['String'];
   settlePayment: SettlePaymentResult;
   settleRefund: SettleRefundResult;
   transitionFulfillmentToState: TransitionFulfillmentToStateResult;
@@ -533,6 +535,11 @@ export type MutationAssignRoleToAdministratorArgs = {
 export type MutationAuthenticateArgs = {
   input: AuthenticationInput;
   rememberMe?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationCancelJobArgs = {
+  jobId: Scalars['ID'];
 };
 
 
@@ -829,7 +836,12 @@ export type MutationSetOrderCustomFieldsArgs = {
 
 
 export type MutationSetUiLanguageArgs = {
-  languageCode?: Maybe<LanguageCode>;
+  languageCode: LanguageCode;
+};
+
+
+export type MutationSetUiThemeArgs = {
+  theme: Scalars['String'];
 };
 
 
@@ -1392,7 +1404,8 @@ export enum JobState {
   RUNNING = 'RUNNING',
   COMPLETED = 'COMPLETED',
   RETRYING = 'RETRYING',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED'
 }
 
 export type JobList = PaginatedList & {
@@ -2005,6 +2018,7 @@ export type ProductTranslationInput = {
 
 export type CreateProductInput = {
   featuredAssetId?: Maybe<Scalars['ID']>;
+  enabled?: Maybe<Scalars['Boolean']>;
   assetIds?: Maybe<Array<Scalars['ID']>>;
   facetValueIds?: Maybe<Array<Scalars['ID']>>;
   translations: Array<ProductTranslationInput>;
@@ -4643,6 +4657,7 @@ export type UserStatus = {
 export type UiState = {
   __typename?: 'UiState';
   language: LanguageCode;
+  theme: Scalars['String'];
 };
 
 export type CurrentUserChannelInput = {
@@ -4905,6 +4920,13 @@ export type SetUiLanguageMutationVariables = Exact<{
 
 export type SetUiLanguageMutation = Pick<Mutation, 'setUiLanguage'>;
 
+export type SetUiThemeMutationVariables = Exact<{
+  theme: Scalars['String'];
+}>;
+
+
+export type SetUiThemeMutation = Pick<Mutation, 'setUiTheme'>;
+
 export type GetNetworkStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -4926,7 +4948,7 @@ export type GetUiStateQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetUiStateQuery = { uiState: (
     { __typename?: 'UiState' }
-    & Pick<UiState, 'language'>
+    & Pick<UiState, 'language' | 'theme'>
   ) };
 
 export type GetClientStateQueryVariables = Exact<{ [key: string]: never; }>;
@@ -4940,7 +4962,7 @@ export type GetClientStateQuery = { networkStatus: (
     & UserStatusFragment
   ), uiState: (
     { __typename?: 'UiState' }
-    & Pick<UiState, 'language'>
+    & Pick<UiState, 'language' | 'theme'>
   ) };
 
 export type SetActiveChannelMutationVariables = Exact<{
@@ -7400,6 +7422,16 @@ export type GetJobQueueListQuery = { jobQueues: Array<(
     & Pick<JobQueue, 'name' | 'running'>
   )> };
 
+export type CancelJobMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type CancelJobMutation = { cancelJob: (
+    { __typename?: 'Job' }
+    & JobInfoFragment
+  ) };
+
 export type ReindexMutationVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -7846,6 +7878,11 @@ export namespace SetAsLoggedOut {
 export namespace SetUiLanguage {
   export type Variables = SetUiLanguageMutationVariables;
   export type Mutation = SetUiLanguageMutation;
+}
+
+export namespace SetUiTheme {
+  export type Variables = SetUiThemeMutationVariables;
+  export type Mutation = SetUiThemeMutation;
 }
 
 export namespace GetNetworkStatus {
@@ -8947,6 +8984,12 @@ export namespace GetJobQueueList {
   export type Variables = GetJobQueueListQueryVariables;
   export type Query = GetJobQueueListQuery;
   export type JobQueues = NonNullable<(NonNullable<GetJobQueueListQuery['jobQueues']>)[number]>;
+}
+
+export namespace CancelJob {
+  export type Variables = CancelJobMutationVariables;
+  export type Mutation = CancelJobMutation;
+  export type CancelJob = (NonNullable<CancelJobMutation['cancelJob']>);
 }
 
 export namespace Reindex {
